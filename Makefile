@@ -2,6 +2,10 @@
 main_package_path = ./cmd/countermag
 binary_name = countermag
 
+.PHONY: test
+test:
+	go test -v -race ./...
+
 .PHONY: tidy
 tidy:
 	go mod tidy -v
