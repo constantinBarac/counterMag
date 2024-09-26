@@ -122,3 +122,13 @@ func (d *Database) Close(ctx context.Context) error {
 	}	
 
 }
+
+func (d *Database) Export() map[string]int {
+	copy := make(map[string]int)
+
+	for k, v := range d.data {
+		copy[k] = v
+	}
+
+	return copy
+}
