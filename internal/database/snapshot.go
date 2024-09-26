@@ -29,12 +29,16 @@ func (p *FileSnapshotPersister) SaveSnapshot(data map[string]int) error {
 	for k, v := range data {
 		buffer = append(buffer, fmt.Sprintf("%s %d", k, v))
 		mergedRecords := strings.Join(buffer, "\n")
-		logFile.WriteString(mergedRecords)
-		buffer = make([]string, 0, 50)
+		if len(mergedRecords) > 50 {
+			logFile.WriteString(mergedRecords + "\n")
+			buffer = make([]string, 0, 50)
+		}
 	}
 
-	mergedRecords := strings.Join(buffer, "\n")
-	logFile.WriteString(mergedRecords)
+	if len(buffer) > 0 {
+		mergedRecords := strings.Join(buffer, "\n")
+		logFile.WriteString(mergedRecords)
+	}
 
 	return nil
 }
