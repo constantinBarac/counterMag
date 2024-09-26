@@ -21,13 +21,17 @@ func NewDatabase(
 	persister SnapshotPersister,
 ) *Database {
 
-	return &Database{
+	database := &Database{
 		ctx:       ctx,
 		logger:    logger,
 		persister: persister,
 		lock:      sync.Mutex{},
 		data:      make(map[string]int),
 	}
+
+	database.StartPeriodicFlush()
+
+	return database
 }
 
 func (d *Database) Get(key string) int {
