@@ -4,18 +4,21 @@ import (
 	"context"
 	"log/slog"
 	"testing"
+	"time"
 )
 
-func getTestDatabase() *Database {
+func getTestDatabase(persister SnapshotPersister) *Database {
 	return &Database{
 		ctx: context.Background(),
 		logger: slog.Default(),
-		persister: &MockPersister{},
+		persister: persister,
+		data: make(map[string]int),
 	}
 }
 
 func TestDatabaseUnusedWords(t *testing.T) {
-	d := getTestDatabase()
+	persister := MockPersister{}
+	d := getTestDatabase(&persister)
 
 	d.AddOccurences("hello", 1)
 
@@ -24,8 +27,10 @@ func TestDatabaseUnusedWords(t *testing.T) {
 	}
 }
 
+
 func TestDatabaseSetAndGet(t *testing.T) {
-	d := getTestDatabase()
+	persister := MockPersister{}
+	d := getTestDatabase(&persister)
 
 	d.AddOccurences("hello", 1)
 	d.AddOccurences("hello", 2)
@@ -39,7 +44,7 @@ func TestDatabaseSetAndGet(t *testing.T) {
 
 func TestDatabaseSaveLoadSnapshot(t *testing.T) {
 	persister := MockPersister{}
-	d := getTestDatabase()
+	d := getTestDatabase(&persister)
 
 	d.AddOccurences("hello", 1)
 	d.AddOccurences("hello", 2)
@@ -54,7 +59,7 @@ func TestDatabaseSaveLoadSnapshot(t *testing.T) {
 		t.Error("[PERSISTER] expected 10, got", persister.data["hello"])
 	}
 
-	recoveredDatabase := getTestDatabase()
+	recoveredDatabase := getTestDatabase(&persister)
 	if err := recoveredDatabase.LoadSnapshot(); err != nil {
 		t.Error(err)
 	}
