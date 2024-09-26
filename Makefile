@@ -15,7 +15,7 @@ build:
 ## run: run the  application
 .PHONY: run
 run: build
-	./${binary_name}
+	./bin/${binary_name}
 
 ## run/live: run the application with reloading on file changes
 .PHONY: run/live
