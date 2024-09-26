@@ -132,3 +132,11 @@ func (d *Database) Export() map[string]int {
 
 	return copy
 }
+
+func (d *Database) Import(data map[string]int) {
+	d.lock.Lock()
+
+	d.data = data
+
+	defer d.lock.Unlock()
+}
