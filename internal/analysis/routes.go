@@ -18,7 +18,12 @@ func handleNewAnalysis(logger *slog.Logger, counterStore *database.Database) htt
 		var payload map[string]string
 		json.NewDecoder(r.Body).Decode(&payload)
 
-		payloadText := payload["text"]
+		payloadText, hasText := payload["text"]
+
+		if !hasText {
+			return nil
+		}
+
 		strippedAndNormalizedText := strings.ToLower(text.Strip(payloadText))
 		words := strings.Split(strippedAndNormalizedText, " ")
 
@@ -32,6 +37,14 @@ func handleNewAnalysis(logger *slog.Logger, counterStore *database.Database) htt
 		}
 
 		words := extractWords(r)
+
+		if words == nil {
+			w.Header().Set("Content-Type", "application/json")
+			w.WriteHeader(http.StatusBadRequest)
+			_ = json.NewEncoder(w).Encode(map[string]string{"message": "Text parameter can not be empty"})
+			return
+		}
+
 		countMap := array.CountElements(words)
 
 		logger.Info(fmt.Sprintf("Received new text containing %d new words", len(countMap)))
@@ -50,7 +63,15 @@ func handleGetCounts(logger *slog.Logger, counterStore *database.Database) http.
 
 		rawWords := r.URL.Query().Get("words")
 		words := strings.Split(rawWords, ",")
-		return words
+
+		nonEmptyWords := make([]string, 0, len(words))
+		for _, word := range words {
+			if word != "" {
+				nonEmptyWords = append(nonEmptyWords, word)
+			}
+		}
+
+		return nonEmptyWords
 	}
 
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -62,6 +83,14 @@ func handleGetCounts(logger *slog.Logger, counterStore *database.Database) http.
 		logger.Info("Received request for words")
 
 		words := extractWords(r)
+		fmt.Printf("----> %s | %d", words, len(words))
+		if len(words) == 0 {		
+			w.Header().Set("Content-Type", "application/json")	
+			w.WriteHeader(http.StatusBadRequest)
+			_ = json.NewEncoder(w).Encode(map[string]string{"message": "You must specify at least one word"})
+			return
+		}
+
 
 		countMap := make(map[string]int)
 		for _, word := range words {
