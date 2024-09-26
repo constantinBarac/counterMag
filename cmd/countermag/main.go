@@ -2,34 +2,40 @@ package main
 
 import (
 	"context"
+	"countermag/internal/logging"
 	"encoding/json"
 	"fmt"
+	"log/slog"
 	"net/http"
 	"os"
 	"os/signal"
 	"time"
 )
 
-func handleTest(w http.ResponseWriter, r *http.Request) {
-	fmt.Println("Test route called")
+func handleTest(logger *slog.Logger) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		logger.Info("Test route called")
 
-	testResponse := map[string]string{
-		"message": "good test",
-	}
+		testResponse := map[string]string{
+			"message": "good test",
+		}
 
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(testResponse)
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusOK)
+		json.NewEncoder(w).Encode(testResponse)
+	})
 }
 
 func main() {
+	logger := logging.GetLogger("local")
+
 	handler := http.NewServeMux()
-	handler.HandleFunc("/test", handleTest)
+	handler.Handle("/test", handleTest(logger))
 	server := http.Server{
-		Addr: ":8080",
+		Addr:    ":8080",
 		Handler: handler,
 	}
-	
+
 	ctx := context.Background()
 	ctx, cancel := signal.NotifyContext(ctx, os.Interrupt)
 	defer cancel()
