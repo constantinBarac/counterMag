@@ -3,6 +3,7 @@ package analysis
 import (
 	"countermag/internal/database"
 	"countermag/pkg/array"
+	"countermag/pkg/text"
 	"encoding/json"
 	"fmt"
 	"log/slog"
@@ -17,11 +18,11 @@ func handleNewAnalysis(logger *slog.Logger, counterStore *database.Database) htt
 		var payload map[string]string
 		json.NewDecoder(r.Body).Decode(&payload)
 
-		text := payload["text"]
-		words := strings.Split(text, " ")
-		normalizedWords := array.MapArray(words, strings.ToLower)
+		payloadText := payload["text"]
+		strippedAndNormalizedText := strings.ToLower(text.Strip(payloadText))
+		words := strings.Split(strippedAndNormalizedText, " ")
 
-		return normalizedWords
+		return words
 	}
 	
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
