@@ -21,7 +21,6 @@ func main() {
 	snapshotPath := "counter.txt"
 	counterStore := database.NewDatabase(signalCtx, logger, &database.FileSnapshotPersister{Path: snapshotPath})
 	
-	closeCtx, cancel := context.WithTimeout(ctx, 6 * time.Second)
 	
 	analysis.RunAnalysisServer(
 		signalCtx,
@@ -29,7 +28,8 @@ func main() {
 		counterStore,
 		8080,
 	)
-
+	
+	closeCtx, cancel := context.WithTimeout(ctx, 5 * time.Second)
 	counterStore.Close(closeCtx)
 	defer cancel()
 }
