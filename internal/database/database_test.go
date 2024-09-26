@@ -68,3 +68,51 @@ func TestDatabaseSaveLoadSnapshot(t *testing.T) {
 		t.Error("expected 10, got", d.Get("hello"))
 	}
 }
+
+func TestFlushOnCloseDeadline(t *testing.T) {
+	persister := MockPersister{}
+	d := getTestDatabase(&persister)
+
+	d.AddOccurences("hello", 1)
+	d.AddOccurences("hello", 2)
+	d.AddOccurences("hello", 3)
+	d.AddOccurences("hello", 4)
+
+	closeCtx, cancel := context.WithTimeout(context.Background(), 5 * time.Second)
+	cancel()
+	
+	err := d.Close(closeCtx)
+
+	if err == nil {
+		t.Error("expected error, got nil")
+	}
+}
+
+func TestFlushOnCloseSuccess(t *testing.T) {
+	persister := MockPersister{}
+	d := getTestDatabase(&persister)
+
+	d.AddOccurences("hello", 1)
+	d.AddOccurences("hello", 2)
+	d.AddOccurences("hello", 3)
+	d.AddOccurences("hello", 4)
+
+	closeCtx, cancel := context.WithTimeout(context.Background(), 5 * time.Second)
+	defer cancel()
+	
+	err := d.Close(closeCtx)
+
+	if err != nil {
+		t.Error("expected nil, got", err)
+	}
+
+	recoveredDatabase := getTestDatabase(&persister)
+
+	if err := recoveredDatabase.LoadSnapshot(); err != nil {
+		t.Error(err)
+	}
+
+	if recoveredDatabase.Get("hello") != 10 {
+		t.Error("expected 10, got", d.Get("hello"))
+	}	
+}
