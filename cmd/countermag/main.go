@@ -10,7 +10,6 @@ import (
 	"time"
 )
 
-
 func main() {
 	ctx := context.Background()
 	signalCtx, cancel := signal.NotifyContext(ctx, os.Interrupt)
@@ -20,16 +19,15 @@ func main() {
 
 	snapshotPath := "counter.txt"
 	counterStore := database.NewDatabase(signalCtx, logger, &database.FileSnapshotPersister{Path: snapshotPath})
-	
-	
+
 	analysis.RunAnalysisServer(
 		signalCtx,
 		logger,
 		counterStore,
 		8080,
 	)
-	
-	closeCtx, cancel := context.WithTimeout(ctx, 5 * time.Second)
+
+	closeCtx, cancel := context.WithTimeout(ctx, 5*time.Second)
 	counterStore.Close(closeCtx)
 	defer cancel()
 }

@@ -48,7 +48,7 @@ func RunAnalysisServer(
 
 	logger.Info("Shutting down application server...")
 
-	shutdownCtx, cancel := context.WithTimeout(ctx, 5 * time.Second)
+	shutdownCtx, cancel := context.WithTimeout(ctx, 5*time.Second)
 	defer cancel()
 
 	if err := server.Shutdown(shutdownCtx); err != nil {

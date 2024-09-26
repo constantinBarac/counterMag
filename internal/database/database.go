@@ -64,7 +64,7 @@ func (d *Database) AddOccurences(key string, extraOccurences int) {
 func (d *Database) LoadSnapshot() error {
 	data, err := d.persister.LoadSnapshot()
 	d.logger.Debug("Loaded snapshot")
-	
+
 	if err != nil {
 		d.logger.Error("Failed to load snapshot", "error", err)
 		return err
@@ -80,7 +80,7 @@ func (d *Database) SaveSnapshot() error {
 	if err != nil {
 		d.logger.Error("Failed to save snapshot", "error", err)
 		return err
-	}	
+	}
 
 	d.logger.Debug("Saved snapshot")
 
@@ -105,21 +105,21 @@ func (d *Database) StartPeriodicFlush() {
 
 func (d *Database) Close(ctx context.Context) error {
 	var done = make(chan bool, 1)
-	
+
 	go func() {
 		d.SaveSnapshot()
-		done<-true
+		done <- true
 	}()
-	
+
 	for {
 		select {
-			case <-ctx.Done():
-				d.logger.Warn("Snapshot save timed out")
-				return ctx.Err()
-			case <-done:
-				return nil
+		case <-ctx.Done():
+			d.logger.Warn("Snapshot save timed out")
+			return ctx.Err()
+		case <-done:
+			return nil
 		}
-	}	
+	}
 
 }
 

@@ -16,7 +16,7 @@ func AddLogging(logger *slog.Logger, h http.Handler) http.Handler {
 		logger.Info(
 			fmt.Sprintf("%s %s took %dms",
 				r.Method, r.URL.Path, duration,
-			), 
+			),
 			"method", r.Method,
 			"path", r.URL.Path,
 			"duration", duration,

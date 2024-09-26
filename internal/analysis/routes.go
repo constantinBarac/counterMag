@@ -29,9 +29,9 @@ func handleNewAnalysis(logger *slog.Logger, counterStore *database.Database) htt
 
 		return words
 	}
-	
+
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if r.Method != http.MethodPost{
+		if r.Method != http.MethodPost {
 			w.WriteHeader(http.StatusMethodNotAllowed)
 			return
 		}
@@ -84,13 +84,12 @@ func handleGetCounts(logger *slog.Logger, counterStore *database.Database) http.
 
 		words := extractWords(r)
 		fmt.Printf("----> %s | %d", words, len(words))
-		if len(words) == 0 {		
-			w.Header().Set("Content-Type", "application/json")	
+		if len(words) == 0 {
+			w.Header().Set("Content-Type", "application/json")
 			w.WriteHeader(http.StatusBadRequest)
 			_ = json.NewEncoder(w).Encode(map[string]string{"message": "You must specify at least one word"})
 			return
 		}
-
 
 		countMap := make(map[string]int)
 		for _, word := range words {

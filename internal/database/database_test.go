@@ -9,10 +9,10 @@ import (
 
 func getTestDatabase(persister SnapshotPersister) *Database {
 	return &Database{
-		ctx: context.Background(),
-		logger: slog.Default(),
+		ctx:       context.Background(),
+		logger:    slog.Default(),
 		persister: persister,
-		data: make(map[string]int),
+		data:      make(map[string]int),
 	}
 }
 
@@ -26,7 +26,6 @@ func TestDatabaseUnusedWords(t *testing.T) {
 		t.Error("expected 0, got", d.Get("world"))
 	}
 }
-
 
 func TestDatabaseSetAndGet(t *testing.T) {
 	persister := MockPersister{}
@@ -78,9 +77,9 @@ func TestFlushOnCloseDeadline(t *testing.T) {
 	d.AddOccurences("hello", 3)
 	d.AddOccurences("hello", 4)
 
-	closeCtx, cancel := context.WithTimeout(context.Background(), 5 * time.Second)
+	closeCtx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	cancel()
-	
+
 	err := d.Close(closeCtx)
 
 	if err == nil {
@@ -97,9 +96,9 @@ func TestFlushOnCloseSuccess(t *testing.T) {
 	d.AddOccurences("hello", 3)
 	d.AddOccurences("hello", 4)
 
-	closeCtx, cancel := context.WithTimeout(context.Background(), 5 * time.Second)
+	closeCtx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
-	
+
 	err := d.Close(closeCtx)
 
 	if err != nil {
@@ -114,5 +113,5 @@ func TestFlushOnCloseSuccess(t *testing.T) {
 
 	if recoveredDatabase.Get("hello") != 10 {
 		t.Error("expected 10, got", d.Get("hello"))
-	}	
+	}
 }
