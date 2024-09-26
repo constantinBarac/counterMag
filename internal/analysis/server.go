@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"log/slog"
 	"net/http"
+	"strconv"
 	"time"
 )
 
@@ -31,7 +32,7 @@ func RunAnalysisServer(
 ) {
 	handler := newHandler(logger, counterStore)
 	server := http.Server{
-		Addr:    ":8080",
+		Addr:    fmt.Sprint(":" + strconv.Itoa(port)),
 		Handler: handler,
 	}
 
