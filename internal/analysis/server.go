@@ -30,6 +30,8 @@ func RunAnalysisServer(
 	counterStore *database.Database,
 	port int,
 ) {
+	logger = logger.With("server", "application")
+
 	handler := newHandler(logger, counterStore)
 	server := http.Server{
 		Addr:    fmt.Sprint(":" + strconv.Itoa(port)),

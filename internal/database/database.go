@@ -117,6 +117,7 @@ func (d *Database) Close(ctx context.Context) error {
 			d.logger.Warn("Snapshot save timed out")
 			return ctx.Err()
 		case <-done:
+			d.logger.Debug("Snapshot save on close successful")
 			return nil
 		}
 	}
@@ -140,3 +141,4 @@ func (d *Database) Import(data map[string]int) {
 
 	defer d.lock.Unlock()
 }
+			
