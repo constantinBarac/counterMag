@@ -30,24 +30,24 @@ func RunAnalysisServer(
 	defer cancel()
 
 	go func() {
-		fmt.Printf("App server listening on %s\n", server.Addr)
+		logger.Info(fmt.Sprintf("App server listening on %s", server.Addr), "address", server.Addr)
 		if err := server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
-			fmt.Printf("error listening and serving: %s\n", err)
+			logger.Error(fmt.Sprintf("error listening and serving: %s", err), "error", err)
 		}
 
-		fmt.Printf("Stopped serving new connections\n")
+		logger.Info("Stopped serving new connections")
 	}()
 
 	<-ctx.Done()
 
-	fmt.Printf("Shutting down application server...\n")
+	logger.Info("Shutting down application server...")
 
 	shutdownCtx, cancel := context.WithTimeout(ctx, 5 * time.Second)
 	defer cancel()
 
 	if err := server.Shutdown(shutdownCtx); err != nil {
-		fmt.Printf("Error shutting down application server: %s\n", err)
+		logger.Error(fmt.Sprintf("Error shutting down application server: %s\n", err), "error", err)
 	}
 
-	fmt.Printf("Shutdown complete\n")
+	logger.Info("Shutdown complete\n")
 }
