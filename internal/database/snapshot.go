@@ -14,11 +14,11 @@ type SnapshotPersister interface {
 }
 
 type FileSnapshotPersister struct {
-	logPath string
+	Path string
 }
 
 func (p *FileSnapshotPersister) SaveSnapshot(data map[string]int) error {
-	logFile, err := os.OpenFile(p.logPath, os.O_CREATE|os.O_WRONLY, 0644)
+	logFile, err := os.OpenFile(p.Path, os.O_CREATE|os.O_WRONLY, 0644)
 	defer logFile.Close()
 
 	if err != nil {
@@ -40,7 +40,7 @@ func (p *FileSnapshotPersister) SaveSnapshot(data map[string]int) error {
 }
 
 func (p *FileSnapshotPersister) LoadSnapshot() (map[string]int, error) {
-	logFile, err := os.OpenFile(p.logPath, os.O_RDONLY, 0644)
+	logFile, err := os.OpenFile(p.Path, os.O_RDONLY, 0644)
 	defer logFile.Close()
 
 	if err != nil {
