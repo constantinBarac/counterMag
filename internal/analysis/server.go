@@ -26,7 +26,7 @@ func RunAnalysisServer(
 		Handler: handler,
 	}
 
-	ctx, cancel := signal.NotifyContext(ctx, os.Interrupt)
+	signalCtx, cancel := signal.NotifyContext(ctx, os.Interrupt)
 	defer cancel()
 
 	go func() {
@@ -38,11 +38,11 @@ func RunAnalysisServer(
 		logger.Info("Stopped serving new connections")
 	}()
 
-	<-ctx.Done()
+	<-signalCtx.Done()
 
 	logger.Info("Shutting down application server...")
 
-	shutdownCtx, cancel := context.WithTimeout(ctx, 5 * time.Second)
+	shutdownCtx, cancel := context.WithTimeout(signalCtx, 5 * time.Second)
 	defer cancel()
 
 	if err := server.Shutdown(shutdownCtx); err != nil {

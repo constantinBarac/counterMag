@@ -9,12 +9,13 @@ import (
 
 
 func main() {
+	ctx := context.Background()
 	logger := logging.GetLogger("local")
 
-	counterStore := database.NewDatabase(logger)
+	counterStore := database.NewDatabase(ctx, logger, &database.FileSnapshotPersister{})
 
 	analysis.RunAnalysisServer(
-		context.Background(),
+		ctx,
 		logger,
 		counterStore,
 		8080,
