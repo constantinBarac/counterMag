@@ -39,7 +39,6 @@ func (d *Database) Get(key string) int {
 	value, exists := d.data[key]
 
 	if !exists {
-		d.logger.Debug("[GET] key not found", "key", key)
 		return 0
 	}
 
@@ -58,7 +57,6 @@ func (d *Database) AddOccurences(key string, extraOccurences int) {
 
 	newValue := currentValue + extraOccurences
 
-	d.logger.Debug("[SET] Key", "key", key, "newValue", newValue)
 	d.data[key] = newValue
 }
 
