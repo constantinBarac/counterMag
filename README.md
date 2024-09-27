@@ -20,14 +20,13 @@
 - Consistenta eventuala
 - Sistemul sa ramana functional daca una din instante devine indisponibila
 
-
 ## Persistenta
 
 Persitenta bazei de date este impementata prin salvarea periodica a continutului acesteia intr-un fisier `counter-{instanceId}.log`, unde `instanceId` este ID-ul unic al instantei de baza de date.
 
 Modul prin care se realizeaza acest lucru este vizibil la nivelul clasei [`Database`](/internal/database/database.go#L79). Pentru a persista continutul, clasa `Database` foloseste un struct care implementeaza interfata [`SnapshotPersister`](/internal/database/snapshot.go#L11). Aceasta interfata expune metodele `SaveSnapshot` si `LoadSnapshot` care sunt folosite pentru scrierea, respectiv citirea unui snapshot intr-un mod definit de orice `struct` care implementeaza interfata respectiva.
 
-In practica, struct-ul concret folosit este [`FileSnapshotPersister`](/internal/database/snapshot.go#L16), care salveaza cheile din baza de date in formatul `<cheie> <valoare>`, separate de caracterul `\n`
+In practica, struct-ul concret folosit este [`FileSnapshotPersister`](/internal/database/snapshot.go#L16), care salveaza cheile din baza de date in formatul `<cheie> <valoare>`, separate de caracterul `\n`.
 
 Aceasta interfata a aparut din nevoia de testare a clasei `Database` fara a interactiona in mod direct cu file system-ul, in teste fiind folosit [`MockPersister`](/internal/database/snapshot.go#L71) care doar tine datele nemodificate intr-un camp.
 
@@ -50,7 +49,7 @@ Modelul de replicare ales este cel de `master-slave`, dupa cum urmeaza:
 - scrierile vor merge catre master si vor fi replicate periodic catre slaves
 - citirile vor merge catre slaves
 
-Este de mentionat ca rutarea scrierilor si citirilor este revizitata la sectiunea de [Imbunatatiri](#imbunatatiri)
+Este de mentionat ca rutarea scrierilor si citirilor este revizitata la sectiunea de [Imbunatatiri](#imbunatatiri).
 
 Rutele expuse de serverul de cluster sunt urmatoarele:
 - `GET  /cluster` - apelat pe nodul master va intoarce toate nodurile conectate la cluster alaturi de portul si starea lor
@@ -58,22 +57,22 @@ Rutele expuse de serverul de cluster sunt urmatoarele:
 - `POST /connect` - apelat de catre slaves catre master pentru a se alatura clusterului
 - `GET  /ping` - folosit de master pentru a verifica periodic starea nodurilor slave
 
-Logica pentru apelarea acestor endpoint-uri a fost incapsulata in [`ClusterClient`](/internal/cluster/client.go#L11)
+Logica pentru apelarea acestor endpoint-uri a fost incapsulata in [`ClusterClient`](/internal/cluster/client.go#L11).
 
 
 ### Availability
 
-Pentru a satisface proprietatea de `Availability` din teorema CAP, nodul master trimite catre fiecare nod slave un snapshot actualizat al bazei de date la un interval de 5 secunde (in conditii reale va fi mai scrut, dar durata aceasta a fost aleasa pentru a putea verifica cu usurinta replicarea in scopul testului tehnic)
+Pentru a satisface proprietatea de `Availability` din teorema CAP, nodul master trimite catre fiecare nod slave un snapshot actualizat al bazei de date la un interval de 5 secunde (in conditii reale ar fi mai scurt, dar durata aceasta a fost aleasa pentru a putea verifica cu usurinta replicarea in scopul testului tehnic).
 
 ### Partition Tolerance
 
-Pentru a satisface proprietatea de `Partition tolerance` din teorema CAP, fiecare nod va continua sa deserveasca request-urile aferente aplicatiei chiar daca devine izolat de restul nodurilor, iar sistemul cu totul va deservi in continuare request-uri chiar daca unul dintre noduri devine indisponibil
+Pentru a satisface proprietatea de `Partition tolerance` din teorema CAP, fiecare nod va continua sa deserveasca request-urile aferente aplicatiei chiar daca devine izolat de restul nodurilor, iar sistemul cu totul va deservi in continuare request-uri chiar daca unul dintre noduri devine indisponibil.
 
-In implementarea curenta exista problema de "ce se intampla daca nodul master devine indisponibil"? Acest lucru este detaliat la sectiunea [Imbunatatiri](#imbunatatiri)
+In implementarea curenta exista problema de "ce se intampla daca nodul master devine indisponibil"? Acest lucru este detaliat la sectiunea [Imbunatatiri](#imbunatatiri).
 
 ## API
 
-Serverul de cluster a fost detaliat la sectiunea [Replicare](#replicare)
+Serverul de cluster este detaliat la sectiunea [Replicare](#replicare).
 
 Serverul de aplicatie expune 2 rute:
 - `POST /analysis` - primeste un text de analizat in formatul 
@@ -82,7 +81,7 @@ Serverul de aplicatie expune 2 rute:
     "text": "<text>"
 } 
 ```
-- `GET  /counts` - primeste o lista de cuvinte separate de caracterul `,` in query string pentru care va intoarce numarul de aparitii in formatul 
+- `GET  /counts` - primeste o lista de cuvinte separate de caracterul `,` in query string pentru care va intoarce numarul de aparitii in formatul:
 ```json
 {
     "<cuvant>": "<numar_de_aparitii>"
@@ -121,9 +120,9 @@ In [Makefile](/Makefile) sunt expuse urmatoarele recipe-uri:
 
 Testele de performanta au fost efectuate pe un VM din GCP de tip `n2-standard-2` cu 2vCPU si 8GB memorie.
 
-Pentru testare am folosit [Locust](https://locust.io/)
+Pentru testare am folosit [Locust](https://locust.io/).
 
-Payload-ul folosit este cel de [aici](/tests/load/data/text.py#L1), format din 232 cuvinte
+Payload-ul folosit este cel de [aici](/tests/load/data/text.py#L1), format din 232 cuvinte.
 
 ### 1 request
 
@@ -145,7 +144,7 @@ Testele pentru 1 singur request nu sunt relevante. Mai jos pot fi observati timp
   <br/>
 </p>
 
-Putem observa cum 99%ile in response time este sub 200ms
+Putem observa cum 99%ile in response time este sub 200ms.
 
 ### Mai multe request-uri | Interogare aparitii
 
@@ -158,12 +157,12 @@ Putem observa cum 99%ile in response time este sub 200ms
   <br/>
 </p>
 
-Ca in cazul anterior, 99%ile se situeaza sub 200ms
+Ca in cazul anterior, 99%ile se situeaza sub 200ms.
 
 ## Demonizare
 
 Aplicatiei este implementata in `Go` si distribuita sub forma unui binar de sine statator.
-Acest binar poate fi integrat cu usurinta cu `systemd` pentru demonizare
+Acest binar poate fi integrat cu usurinta cu `systemd` pentru demonizare.
 
 ## Logging
 
@@ -185,7 +184,7 @@ Am folosit modelul master-slave pentru replicare, ceea ce duce la un read throug
 
 Din implementarea curenta lipseste un mecanism de failover care sa permita unui slave sa preia rolul de master in cazul in care acesta devine indisponibil.
 
-Daca exista flexibilitate cu privire la exactitatea numarului de aparitii, putem creste write throughput-ul folosind un model replicare master-master pentru nu fi limitati de un singur nod folosit pentru scrieri
+Daca exista flexibilitate cu privire la exactitatea numarului de aparitii, putem creste write throughput-ul folosind un model replicare master-master pentru nu fi limitati de un singur nod folosit pentru scrieri.
 
 #### Offloading
 
@@ -211,7 +210,7 @@ In cazul `Go` cu pachetul [`database/sql`](https://pkg.go.dev/database/sql), un 
 db.Query("SELECT name FROM users WHERE age=" + req.FormValue("age"))
 ```
 
-Problema aici este ca valoarea parametrului `age` este concatenata direct in query si trimis catre DB
+Problema aici este ca valoarea parametrului `age` este concatenata direct in query si trimis catre DB.
 
 Alternativa sigura ar fi:
 
@@ -219,7 +218,7 @@ Alternativa sigura ar fi:
 db.Query("SELECT name FROM users WHERE age=?", req.FormValue("age"))
 ```
 
-Prin folosirea placeholder-ului `?` pentru valoare, la DB vor ajunge query-ul si valoarea aferenta placeholder-ului separat. In forma acesata, query-ul nu va fi executat daca valoarea parametrului `age` contine caractere ilegale
+Prin folosirea placeholder-ului `?` pentru valoare, la DB vor ajunge query-ul si valoarea aferenta placeholder-ului separat. In forma acesata, query-ul nu va fi executat daca valoarea parametrului `age` contine caractere ilegale.
 
 De asemenea, putem efectua propria sanitizare inainte de a ajunge macar la DB.
 
