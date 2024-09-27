@@ -180,7 +180,7 @@ func suppressDefaults(
 func newHandler(opts *slog.HandlerOptions) *Handler {
 	if opts == nil {
 		opts = &slog.HandlerOptions{
-			Level: slog.LevelDebug,
+			Level: slog.LevelInfo,
 		}
 	}
 	b := &bytes.Buffer{}
