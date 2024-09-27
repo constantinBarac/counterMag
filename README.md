@@ -33,7 +33,7 @@ Datele sunt salvate periodic folosind un goroutine separat pornit prin apelul fu
 
 Acest goroutine este oprit in momentul in care contextul folosit de `Database` este 'oprit'.
 
-`Database` exporta si functia [`Close`](/internal/database/database.go#L106) care este apelata la momentul opririi aplicatiei cu un [timeout](/internal/database/main.go#L78) ca parte din procesul de graceful shutdown pentru a evita pierderea datelor.
+`Database` exporta si functia [`Close`](/internal/database/database.go#L106) care este apelata la momentul opririi aplicatiei cu un [timeout](/cmd/countermag/main.go#L78) ca parte din procesul de graceful shutdown pentru a evita pierderea datelor.
 
 
 ## Replicare
@@ -45,6 +45,16 @@ Aplicatia expune doua servere HTTP:
 Modelul de replicare ales este cel de `master-slave`, dupa cum urmeaza:
 - fiecare instanta este pornita cu flag-urile `cluster` si `port`, unde `cluster` reprezinta adresa nodului master in format `host:port` si `port` reprezinta portul pe care va rula nodul curent
 - daca portul nodului curent coincide cu portul din adresa nodului master, nodul curent va porni ca master, altfel se va conecta la master si acesta il va inregistra ca slave
+- scrierile vor merge catre master si vor fi replicate periodic catre slaves
+- citirile vor merge catre slaves
+
+Este de mentionat ca rutarea scrierilor si citirilor este revizitata la sectiunea de imbunatatiri
 
 Rutele expuse de serverul de cluster sunt urmatoarele:
-- `GET /cluster` - apelat pe 
+- `GET    /cluster` - apelat pe nodul master va intoarce toate nodurile conectate la cluster alaturi de portul si starea lor
+- `PUT  /store` - apelat periodic de catre master pentru fiecare dintre nodurile slave pentru a sincroniza baza de date
+- `POST /connect` - apelat de catre slaves catre master pentru a se alatura clusterului
+- `GET  /ping` - folosit de master pentru a verifica periodic starea nodurilor slave
+
+Logica pentru apelarea acestor endpoint-uri a fost incapsulata in [`ClusterClient`](/internal/cluster/client.go#L11)
+
