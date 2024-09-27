@@ -47,7 +47,7 @@ func main() {
 	thisNode, clusterMaster := getNodePair(*clusterMasterAddr, *clusterPort)
 
 	logger := logging.GetLogger("local")
-	snapshotPath := fmt.Sprintf("/usr/local/countermag/counter-%d.log", thisNode.Id)
+	snapshotPath := fmt.Sprintf("./counter-%d.log", thisNode.Id)
 	logger.Debug("Snapshot path", "path", snapshotPath)
 
 	ctx := context.Background()
