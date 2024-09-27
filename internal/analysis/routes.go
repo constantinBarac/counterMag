@@ -80,10 +80,11 @@ func handleGetCounts(logger *slog.Logger, counterStore *database.Database) http.
 			return
 		}
 
-		logger.Info("Received request for words")
+
+		addr := r.RemoteAddr
+		logger.Info("Received request for words from", "address", addr)
 
 		words := extractWords(r)
-		fmt.Printf("----> %s | %d", words, len(words))
 		if len(words) == 0 {
 			w.Header().Set("Content-Type", "application/json")
 			w.WriteHeader(http.StatusBadRequest)
