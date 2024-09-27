@@ -2,9 +2,17 @@
 main_package_path = ./cmd/countermag
 binary_name = countermag
 
-.PHONY: test
-test:
+.PHONY: test/unit
+test/unit:
 	go test -v -race ./...
+
+.PHONY: test/load
+test/load: build
+	scripts/load.sh
+
+.PHONY: test/replication
+test/replication: build
+	python3 tests/replication/replication.py
 
 .PHONY: tidy
 tidy:
@@ -29,3 +37,15 @@ run/live:
 		--build.exclude_dir "" \
 		--build.include_ext "go, tpl, tmpl, html, css, scss, js, ts, sql, jpeg, jpg, gif, png, bmp, svg, webp, ico" \
 		--misc.clean_on_exit "true"
+
+.PHONY: run/replicated
+run/replicated: build 
+	./scripts/spinup_fg.sh
+	./scripts/teardown.sh
+
+.PHONY: clean
+clean:
+	./scripts/teardown.sh
+	rm -r out/
+	rm -r bin/
+

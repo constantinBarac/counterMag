@@ -2,9 +2,11 @@
 
 ## Estimari
 
-- Cereri analiza text: 500 req / s
-- Cereri citire text:  10 000 req / s
+- Cereri analiza text: 200 req / s cu <200ms timp de raspuns
 - Dimensiune medie text: 200 cuvinte (inspirat de [aici](https://www.emag.ro/telefon-mobil-samsung-galaxy-s24-ultra-dual-sim-12gb-ram-256gb-5g-titanium-black-sm-s928bzkgeue/pd/DP6L7KYBM/))
+
+- Cereri citire text:  200 req / s cu <200ms timp de raspuns
+- Nr mediu cuvinte cerute per interogare: 20
 
 ## Cerinte functionale
 
@@ -95,6 +97,49 @@ Pentru a rula aplicatia sunt expuse urmatoarele recipe-uri in [Makefile](/Makefi
 - `make build` - compileaza codul
 - `make run` - compileaza si ruleaza codul
 - `make run/live` - ruleaza codul si faciliteaza live-reloading in scopuri de dezvoltare
+
+## Testare
+
+Testele de performanta au fost efectuate pe un VM din GCP de tip `n2-standard-2` cu 2vCPU si 8GB memorie.
+
+Pentru testare am folosit [Locust](https://locust.io/)
+
+Payload-ul folosit este cel de [aici](/tests/load/data/text.py#L1) format din 232 cuvinte
+
+### 1 request
+
+Timp mediu (1 request, 1 nod) analiza: 36ms
+Timp mediu (1 request, 1 nod) nr aparitii pentru toate cuvintele: 36ms
+
+Din aceste 36ms, aproximativ 35ms provin din latenta din retea. Procesarea propriu-zisa pe server a fost efectuata in <5ms
+Testele pentru 1 singur request nu sunt relevante. Mai jos pot fi observati timpii de raspuns pentru (200 req / s, 1 nod):
+
+### Mai multe request-uri | Analiza text
+
+
+<p align="center">
+  <img src="images/200rps-analysis-chart.png">
+  <br/>
+</p>
+<p align="center">
+  <img src="images/200rps-analysis-table.png">
+  <br/>
+</p>
+
+Putem observa cum 99%ile in response time este sub 200ms
+
+### Mai multe request-uri | Interogare aparitii
+
+<p align="center">
+  <img src="images/200rps-query-chart.png">
+  <br/>
+</p>
+<p align="center">
+  <img src="images/200rps-query-table.png">
+  <br/>
+</p>
+
+Ca in cazul anterior, 99%ile se situeaza sub 200ms
 
 ## Imbunatatiri
 
