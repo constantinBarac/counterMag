@@ -180,9 +180,13 @@ Pe acest pachet se bazeaza si middleware-ul [`AddLogging`](/internal/http/middle
 ### Performanta & bottlenecks
 
 #### Model replicare
+
 Am folosit modelul master-slave pentru replicare, ceea ce duce la un read throughput crescut. Toate scrierile trec prin nodul master, evitand astfel potentiale conflicte de scriere, dar in acelasi timp transformand-ul intr-un potential bottleneck daca vin multe request-uri de analiza text.
 
-Din implementarea curenta lipseste un mecanism de failover care sa permita unui slave sa preia rolul de master in cazul in care acesta devine indisponibil.
+Din implementarea curenta lipsesc doua lucruri esentiale pentru un astfel de model pus in productie:
+- un mecanism de failover care sa permita unui slave sa preia rolul de master in cazul in care acesta devine indisponibil
+- o rutare automata a scrierilor catre master si citirilor catre slaves; acest lucru poate fi efectuat si la nivel de client folosind conexiuni separate pentru scriere / citire 
+- o distribuire automata a citirilor printre slaves pentru a nu solicita unul anume; aici ar interveni un load balancer
 
 Daca exista flexibilitate cu privire la exactitatea numarului de aparitii, putem creste write throughput-ul folosind un model replicare master-master pentru nu fi limitati de un singur nod folosit pentru scrieri.
 
