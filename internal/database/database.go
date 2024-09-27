@@ -12,7 +12,7 @@ type Database struct {
 	logger    *slog.Logger
 	persister SnapshotPersister
 	data      map[string]int
-	lock      sync.Mutex
+	lock      sync.RWMutex
 }
 
 func NewDatabase(
@@ -25,7 +25,7 @@ func NewDatabase(
 		ctx:       ctx,
 		logger:    logger,
 		persister: persister,
-		lock:      sync.Mutex{},
+		lock:      sync.RWMutex{},
 		data:      make(map[string]int),
 	}
 
@@ -36,6 +36,9 @@ func NewDatabase(
 }
 
 func (d *Database) Get(key string) int {
+	d.lock.RLock()
+	defer d.lock.RUnlock()
+
 	value, exists := d.data[key]
 
 	if !exists {
@@ -126,8 +129,8 @@ func (d *Database) Close(ctx context.Context) error {
 }
 
 func (d *Database) Export() map[string]int {
-	d.lock.Lock()
-	defer d.lock.Unlock()
+	d.lock.RLock()
+	defer d.lock.RUnlock()
 	
 	copy := make(map[string]int)
 
