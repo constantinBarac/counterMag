@@ -89,14 +89,22 @@ Serverul de aplicatie expune 2 rute:
 }
 ```
 
-## Rulare
+## Makefile
 
-Pentru a rula aplicatia sunt expuse urmatoarele recipe-uri in [Makefile](/Makefile):
-- `make test` - ruleaza teste unitare
-- `make tidy` - formateaza codul si aduce dependintele in sync cu codul
-- `make build` - compileaza codul
-- `make run` - compileaza si ruleaza codul
-- `make run/live` - ruleaza codul si faciliteaza live-reloading in scopuri de dezvoltare
+
+In [Makefile](/Makefile) sunt expuse urmatoarele recipe-uri:
+- Rulare
+  - `make build` - compileaza codul
+  - `make run` - compileaza si ruleaza codul cu un singur nod master
+  - `make run/live` - ruleaza codul si faciliteaza live-reloading in scopuri de dezvoltare
+  - `make run/replicated` - porneste un nod master si un nod slave
+- Testare
+  - `make test/unit` - ruleaza testele unitare
+  - `make test/load` - ruleaza un [load test](/scripts/load.sh) timp de 10 secunde cu 200 req / s; necesita o instalare de python cu dependintele specificate in acest [requirements.txt](/tests/load/requirements.txt)
+  - `make test/replication` - ruleaza un [test simplu](/tests/replication/replication.py) de replicare ce consta in pornirea unui nod master si a unui nod slave, analiza unui text si doua comparatii intre datele tinute in cele doua noduri; necesita o instalare de python cu dependintele specificate in acest [requirements.txt](/tests/replication/requirements.txt)
+- Utilitare
+  - `make tidy` - formateaza codul si actualizeaza dependintele
+  - `make clean` - sterge toate artefactele
 
 ## Testare
 

@@ -8,7 +8,7 @@ test/unit:
 
 .PHONY: test/load
 test/load: build
-	scripts/load.sh
+	python3 tests/load/load.py
 
 .PHONY: test/replication
 test/replication: build
