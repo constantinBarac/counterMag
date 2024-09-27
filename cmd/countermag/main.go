@@ -48,7 +48,8 @@ func main() {
 
 	logger := logging.GetLogger("local")
 	snapshotPath := fmt.Sprintf("counter-%d.log", thisNode.Id)
-	
+	logger.Debug("Snapshot path", "path", snapshotPath)
+
 	ctx := context.Background()
 	signalCtx, cancel := signal.NotifyContext(ctx, os.Interrupt)
 	defer cancel()
