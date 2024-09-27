@@ -51,7 +51,7 @@ Modelul de replicare ales este cel de `master-slave`, dupa cum urmeaza:
 Este de mentionat ca rutarea scrierilor si citirilor este revizitata la sectiunea de imbunatatiri
 
 Rutele expuse de serverul de cluster sunt urmatoarele:
-- `GET    /cluster` - apelat pe nodul master va intoarce toate nodurile conectate la cluster alaturi de portul si starea lor
+- `GET  /cluster` - apelat pe nodul master va intoarce toate nodurile conectate la cluster alaturi de portul si starea lor
 - `PUT  /store` - apelat periodic de catre master pentru fiecare dintre nodurile slave pentru a sincroniza baza de date
 - `POST /connect` - apelat de catre slaves catre master pentru a se alatura clusterului
 - `GET  /ping` - folosit de master pentru a verifica periodic starea nodurilor slave
