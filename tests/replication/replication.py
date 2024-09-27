@@ -44,9 +44,7 @@ def test_replication():
     print("Sync has happened!")
 
 
-print("Spinning up master-slave pair...")
 spin_up_instances()
-print("Spun up instances")
 
 print("Testing replication...")
 try:
@@ -55,6 +53,4 @@ except AssertionError:
     print("Replication test FAILED")
 print("Replication test PASSED")
 
-print("Cleaning up...")
 teardown_instances()
-print("Cleanup complete")
