@@ -29,6 +29,7 @@ func NewDatabase(
 		data:      make(map[string]int),
 	}
 
+	database.LoadSnapshot()
 	database.StartPeriodicFlush()
 
 	return database
