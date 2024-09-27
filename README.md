@@ -89,8 +89,19 @@ Serverul de aplicatie expune 2 rute:
 }
 ```
 
-## Makefile
 
+## Rulare 
+
+### Direct
+
+Pentru o rulare rapida a unui nod, pot fi folosite comenzile: </br>
+
+`go run cmd/countermag/main.go --cluster 127.0.0.1:8000 --port 8000` - porneste nod master </br>
+
+`go run cmd/countermag/main.go --cluster 127.0.0.1:8000 --port 8001` - porneste nod slave
+
+
+### Makefile
 
 In [Makefile](/Makefile) sunt expuse urmatoarele recipe-uri:
 - Rulare
@@ -149,6 +160,74 @@ Putem observa cum 99%ile in response time este sub 200ms
 
 Ca in cazul anterior, 99%ile se situeaza sub 200ms
 
+## Demonizare
+
+Aplicatiei este implementata in `Go` si distribuita sub forma unui binar de sine statator.
+Acest binar poate fi integrat cu usurinta cu `systemd` pentru demonizare
+
+## Logging
+
+Pentru logging este folosit pachetului [`logging.py`](/internal/logging/logging.go). Acesta este implementat pe baza pachetului `log/slog` si acestui [articol](https://dusted.codes/creating-a-pretty-console-logger-using-gos-slog-package), din moment ce implementarea logger-ului in sine este inafara obiectivului testului tehnic.
+
+Functia [`GetLogger`](/internal/logging/logging.go#L58) primeste `environment` ca parametru.
+Daca este rulat in mediul `local` (ca in cadrul acestui test) output-ul va aparea in consola intr-un format mult mai inteligil pentru operator.
+
+Alternativ, pentru alte medii (cum ar fi cel din Cloud) este folosit `NewJSONHandler` care va rezulta intr-un format usor de parsat pentru agenti de logging din cloud, cum este cel din GCP.
+
+Pe acest pachet se bazeaza si middleware-ul [`AddLogging`](/internal/http/middleware/middleware.go#L10), folosit de cele 2 servere HTTP pentru a include informatii despre durata fiecarui request.
+
 ## Imbunatatiri
 
-WIP
+### Performanta & bottlenecks
+
+#### Model replicare
+Am folosit modelul master-slave pentru replicare, ceea ce duce la un read throughput crescut. Toate scrierile trec prin nodul master, evitand astfel potentiale conflicte de scriere, dar in acelasi timp transformand-ul intr-un potential bottleneck daca vin multe request-uri de analiza text.
+
+Din implementarea curenta lipseste un mecanism de failover care sa permita unui slave sa preia rolul de master in cazul in care acesta devine indisponibil.
+
+Daca exista flexibilitate cu privire la exactitatea numarului de aparitii, putem creste write throughput-ul folosind un model replicare master-master pentru nu fi limitati de un singur nod folosit pentru scrieri
+
+#### Offloading
+
+Nodurile care stocheaza datele sunt aceleasi care proceseaza textul. In cazul de fata, procesarea este relativ simpla si nu necesita prea multe resurse. In cazul unui pipeline mai complex, aceasta procesare ar trebui offload-uita unori noduri de tip worker care sa trimita catre baza de date doar rezultatul.
+
+### Configuratie
+
+Exista mai multe aspecte ale implementarii curente care ar sta mai bine intr-un struct ipotetic `Config` populat din varii surse (variabile de mediu, fisier, argumente in linia de comanda). Cateva exemple sunt:
+- intervalul de sincronizare master-slave
+- mediul in care ruleaza aplicatia
+- IP-ul cluster-ului
+- calea catre fisierul de persitenta
+
+### Masuri protectie SQL injection, XSS etc (provocari suplimentare 3)
+
+#### SQL Injection
+
+SQL injection-ul poate fi evitat prin folosirea functiilor corespunzatoare la momentul construirii query-ului de trimis catre baza de date.
+
+In cazul `Go` cu pachetul [`database/sql`](https://pkg.go.dev/database/sql), un cod vulnerabil la acest atac ar fi: 
+
+```go
+db.Query("SELECT name FROM users WHERE age=" + req.FormValue("age"))
+```
+
+Problema aici este ca valoarea parametrului `age` este concatenata direct in query si trimis catre DB
+
+Alternativa sigura ar fi:
+
+```go
+db.Query("SELECT name FROM users WHERE age=?", req.FormValue("age"))
+```
+
+Prin folosirea placeholder-ului `?` pentru valoare, la DB vor ajunge query-ul si valoarea aferenta placeholder-ului separat. In forma acesata, query-ul nu va fi executat daca valoarea parametrului `age` contine caractere ilegale
+
+De asemenea, putem efectua propria sanitizare inainte de a ajunge macar la DB.
+
+#### XSS
+
+Pentru inceput, atat pentru SQL Injection, cat pentru XSS putem efectua sanitizare asupra oricarui input in sistemul nostru. Ambele sunt vulnerabilitati solutii cunoscute care ar trebui sa fie standard in orice aplicatie web.
+
+Cativa pasi pentru prevenirea XSS sunt:
+- sanitizarea inputului
+- folosirea header-ului de `content-type` corespunzator
+- verificarea framework-urilor vis-a-vis de aceste vulnerabilitati inainte de a le folosi
