@@ -24,4 +24,7 @@ go.work.sum
 # env file
 .env
 
+
 bin/
+venv/
+__pycache__/
