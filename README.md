@@ -75,13 +75,13 @@ In implementarea curenta exista problema de "ce se intampla daca nodul master de
 Serverul de cluster este detaliat la sectiunea [Replicare](#replicare).
 
 Serverul de aplicatie expune 2 rute:
-- `POST /analysis` - primeste un text de analizat in formatul 
+- `POST /analysis` - primeste un text de analizat in body in formatul 
 ```json
 {
     "text": "<text>"
 } 
 ```
-- `GET  /counts` - primeste o lista de cuvinte separate de caracterul `,` in query string pentru care va intoarce numarul de aparitii in formatul:
+- `GET  /counts?words=<word_1>,<word_2>` - primeste o lista de cuvinte separate de caracterul `,` in query string pentru care va intoarce numarul de aparitii in formatul:
 ```json
 {
     "<cuvant>": "<numar_de_aparitii>"
