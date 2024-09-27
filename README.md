@@ -23,17 +23,17 @@
 
 Persitenta bazei de date este impementata prin salvarea periodica a continutului acesteia intr-un fisier `counter-{instanceId}.log`, unde `instanceId` este ID-ul unic al instantei de baza de date.
 
-Modul prin care se realizeaza acest lucru este la nivelul clasei [`Database`](/blob/master/internal/database/database.go#L77). Pentru a persista continutul, clasa `Database` foloseste un struct care implementeaza interfata [`SnapshotPersister`](/blob/master/internal/database/snapshot.go#L11). Aceasta interfata expune metodele `SaveSnapshot` si `LoadSnapshot` care sunt folosite pentru scrierea, respectiv citirea unui snapshot intr-un mod definit de orice `struct` care implementeaza interfata respectiva.
+Modul prin care se realizeaza acest lucru este la nivelul clasei [`Database`](/internal/database/database.go#L77). Pentru a persista continutul, clasa `Database` foloseste un struct care implementeaza interfata [`SnapshotPersister`](/internal/database/snapshot.go#L11). Aceasta interfata expune metodele `SaveSnapshot` si `LoadSnapshot` care sunt folosite pentru scrierea, respectiv citirea unui snapshot intr-un mod definit de orice `struct` care implementeaza interfata respectiva.
 
-In practica, struct-ul concret folosit este [`FileSnapshotPersister`](/blob/master/internal/database/snapshot.go#L16), care salveaza cheile din baza de date in formatul `<cheie> <valoare>`, separate de caracterul `\n`
+In practica, struct-ul concret folosit este [`FileSnapshotPersister`](/internal/database/snapshot.go#L16), care salveaza cheile din baza de date in formatul `<cheie> <valoare>`, separate de caracterul `\n`
 
-Aceasta interfata a aparut din nevoia de testare a clasei `Database` fara a interactiona in mod direct cu file system-ul, in teste fiind folosit [`MockSnapshotPersister`](/blob/master/internal/database/snapshot.go#L71) care doar tine datele nemodificate intr-un camp.
+Aceasta interfata a aparut din nevoia de testare a clasei `Database` fara a interactiona in mod direct cu file system-ul, in teste fiind folosit [`MockSnapshotPersister`](/internal/database/snapshot.go#L71) care doar tine datele nemodificate intr-un camp.
 
-Datele sunt salvate periodic folosind un goroutine separat pornit prin apelul functiei [`StartPeriodicFlush`](/blob/master/internal/database/database.go#L90). Aceasta este apelata implicit in functia constructor [`NewDatabase`](/blob/master/internal/database/database.go#L18).
+Datele sunt salvate periodic folosind un goroutine separat pornit prin apelul functiei [`StartPeriodicFlush`](/internal/database/database.go#L90). Aceasta este apelata implicit in functia constructor [`NewDatabase`](/internal/database/database.go#L18).
 
 Acest goroutine este oprit in momentul in care contextul folosit de `Database` este 'oprit'.
 
-`Database` exporta si functia [`Close`](/blob/master/internal/database/database.go#L106) care este apelata la momentul opririi aplicatiei cu un [timeout](/blob/master/internal/database/main.go#L78) ca parte din procesul de graceful shutdown pentru a evita pierderea datelor.
+`Database` exporta si functia [`Close`](/internal/database/database.go#L106) care este apelata la momentul opririi aplicatiei cu un [timeout](/internal/database/main.go#L78) ca parte din procesul de graceful shutdown pentru a evita pierderea datelor.
 
 
 ## Replicare
