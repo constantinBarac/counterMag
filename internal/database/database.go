@@ -75,7 +75,9 @@ func (d *Database) LoadSnapshot() error {
 }
 
 func (d *Database) SaveSnapshot() error {
-	err := d.persister.SaveSnapshot(d.data)
+	data := d.Export()
+
+	err := d.persister.SaveSnapshot(data)
 
 	if err != nil {
 		d.logger.Error("Failed to save snapshot", "error", err)
@@ -125,6 +127,9 @@ func (d *Database) Close(ctx context.Context) error {
 }
 
 func (d *Database) Export() map[string]int {
+	d.lock.Lock()
+	defer d.lock.Unlock()
+	
 	copy := make(map[string]int)
 
 	for k, v := range d.data {
